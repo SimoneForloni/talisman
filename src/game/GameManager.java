@@ -1,60 +1,43 @@
 package game;
 
-import java.util.Scanner;
-
 import game.model.Player;
+import game.util.CharacterClass;
+import game.util.Constants;
+import game.util.Methods;
 
 public class GameManager {
-
-  private static final Scanner scanner = new Scanner(System.in);
 
   public static void main(String[] args) {
     boolean running = true;
 
     while (running) {
-      char choice = askMenuChoice();
+      int choice = askMenuChoice();
 
       switch (choice) {
-        case '1' -> {
-          Player player = carachterCreator();
-          if (player == null) {
-            break;
-          }
-          Game game = new Game(player);
-          game.start();
+        case 1 -> {
+          createAndStartGame();
         }
-        case '2' -> System.out.println("\n-> Funzionalità Carica non ancora implementata.\n");
-        case '3' -> System.out.println("\n-> Impostazioni non ancora implementate.\n");
-        case '4' -> {
+        case 2 -> System.out.println("\n-> Funzionalità Carica non ancora implementata.\n");
+        case 3 -> System.out.println("\n-> Impostazioni non ancora implementate.\n");
+        case 4 -> {
           System.out.println("\nArrivederci!");
           running = false;
         }
       }
 
-      if (running && choice != '1') {
-        pressEnterToContinue();
+      if (running && choice != 1) {
+        Methods.pressEnterToContinue();
       }
     }
 
-    scanner.close();
-    System.exit(0);
+    Constants.scanner.close();
   }
 
-  private static char askMenuChoice() {
+  private static int askMenuChoice() {
+    Methods.clearScreen();
+    showMenu();
 
-    while (true) {
-      clearScreen();
-      showMenu();
-
-      String input = scanner.nextLine().trim().toUpperCase();
-
-      if (input.length() == 1 && "1234".contains(input)) {
-        return input.charAt(0);
-      }
-
-      System.out.println("\nInvalid choice. Retry.");
-      pressEnterToContinue();
-    }
+    return Methods.readNumber(1, 4);
   }
 
   private static void showMenu() {
@@ -72,88 +55,57 @@ public class GameManager {
         """);
   }
 
-  private static void clearScreen() {
-    System.out.print("\033[H\033[2J");
-    System.out.flush();
-  }
-
-  private static void pressEnterToContinue() {
-    System.out.println("Premi INVIO per continuare...");
-    scanner.nextLine();
-  }
-
   private static Player carachterCreator() {
-    System.out.println("\n=== CHARACTER CREATION ===\n");
-
-    String name;
-    
     while (true) {
-      System.out.println("Choose your name: ");
+      System.out.println("\n=== CHARACTER CREATION ===\n");
 
-      name = scanner.nextLine().trim();
-      
-      if (name.isBlank()) {
-        System.out.println("Invalid name: ");
-        continue;
+      String name = askPlayerName();
+      if (name == null)
+        return null; // Uscita pulita
+
+      System.out.println("\nChoose your class:");
+      System.out.println("1) Warrior\n2) Wizard\n3) Thief");
+
+      int choice = Methods.readNumber(1, 3);
+
+      CharacterClass selectedClass = switch (choice) {
+        case 1 -> CharacterClass.WARRIOR;
+        case 2 -> CharacterClass.WIZARD;
+        default -> CharacterClass.THIEF;
+      };
+
+      Player p = new Player(name, selectedClass);
+      System.out.println("\nCharacter summary:\n" + p);
+
+      System.out.print("Confirm creation? (y/n): ");
+      String confirm = Constants.scanner.nextLine().trim().toLowerCase();
+
+      if (confirm.startsWith("y") || confirm.startsWith("s")) {
+        return p;
       }
 
-      if (name.equalsIgnoreCase("q")) {
-        System.out.println("Character creation cancelled");
-        return(null);
-      }
-
-      if (name.length() < 2) {
-        System.out.println("Character name too short (at least 2 charachters)");
-        continue;
-      }
-
-      if (name.length() > 20) {
-        System.out.println("Character name too long (max 20 charachters)");
-        continue;
-      }
-
-      break;
+      System.out.println("\nCreation cancelled. Let's start over...");
     }
-
-    System.out.println("""
-        ╔════════════════════════════╗
-        ║          TALISMAN          ║
-        ╚════════════════════════════╝
-
-              1) Warrior
-              2) Wizarx
-              3) Thief
-
-        Select a option (1-4):
-        """);
-
-    int choice = readNumber(1, 3);
-
-    String classType = switch (choice) {
-      case 1 -> "warrior";
-      case 2 -> "wizard";
-      default -> "thief";
-    };
-
-    Player p = new Player(name, classType);
-
-    System.out.println(p);
-
-    System.out.println("You can't change your class once confirmed. Do you confirm? (y/n): ");
-    if (!scanner.nextLine().trim().toLowerCase().startsWith("s")) {}
-
-    return p;
   }
 
-  private static int readNumber(int min, int max) {
+  private static void createAndStartGame() {
+    Player player = carachterCreator();
+    if (player != null) {
+      new Game(player).start();
+    }
+  }
+
+  private static String askPlayerName() {
     while (true) {
-      try {
-        int n = Integer.parseInt(scanner.nextLine().trim());
-        if (n >= min && n <= max) return n;
-        System.out.println("Pick a number between " + min + " and " + max);
-      } catch (NumberFormatException e) {
-        System.out.println("Pick a valid number.");
-      }
+      System.out.print("Choose your name (or 'q' to cancel): ");
+      String name = Constants.scanner.nextLine().trim();
+
+      if (name.equalsIgnoreCase("q"))
+        return null;
+      if (name.length() >= 2 && name.length() <= 20)
+        return name;
+
+      System.out.println("Invalid name (must be between 2 and 20 characters).");
     }
   }
 }

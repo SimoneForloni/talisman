@@ -1,6 +1,7 @@
 package game;
 
 import game.model.Player;
+import game.util.Methods;
 
 public class Game {
   private Player player;
@@ -26,7 +27,6 @@ public class Game {
   }
 
   public void start() {
-    System.out.println(player.toString());
-
+    Methods.clearScreen();
   }
 }
