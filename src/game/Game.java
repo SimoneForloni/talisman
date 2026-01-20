@@ -60,7 +60,7 @@ public class Game {
       System.out.print("Rolling dice");
       for (int i = 0; i < 3; i++) {
         Thread.sleep(200);
-        System.err.print(".");
+        System.out.print(".");
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -113,7 +113,16 @@ public class Game {
   }
 
   private void hadleGameOver() {
-    System.err.println("------------ Game Over ------------");
+    Methods.clearScreen();
+    System.out.println("""
+        ####################################
+                  G A M E   O V E R
+        ####################################
+        """);
+    System.out.println("L'avventura di " + player.getName() + " termina qui.");
+    System.out.println("Monete raccolte: " + player.getCoins());
+    System.out.println("Esperienza totale: " + player.getXp());
+    System.out.println("\nGrazie per aver giocato!");
     Methods.pressEnterToContinue();
   }
 }

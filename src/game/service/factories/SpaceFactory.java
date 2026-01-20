@@ -1,9 +1,9 @@
-package game.model.board;
+package game.service.factories;
 
 import java.util.Random;
 
 import game.model.Player;
-import game.model.board.spaces.CombatSpace;
+import game.model.board.spaces.DangerSpace;
 import game.model.board.spaces.Space;
 import game.model.board.spaces.TreasureSpace;
 import game.model.board.spaces.VillageSpace;
@@ -23,7 +23,7 @@ public class SpaceFactory {
       };
 
     } else if (roll < 75) {
-      return new CombatSpace("Wilderness" + id, "You hear growls from the bushes...");
+      return new DangerSpace("Wilderness " + id, "You hear growls from the bushes...");
     } else if (roll < 90) {
       return new TreasureSpace();
     } else {

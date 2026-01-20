@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import game.model.board.spaces.*;
+import game.service.factories.SpaceFactory;
 import game.util.Constants;
 
 public class Board {
@@ -18,7 +19,7 @@ public class Board {
 
     for (int i = 1; i < Constants.BOARD_SIZE; i++) {
       if (i > 40) {
-        spaces.add(new CombatSpace("Abissal Wasteladn" + i, "An ancient evil dwells here."));
+        spaces.add(new DangerSpace("Abissal Wasteladn" + i, "An ancient evil dwells here."));
       } else {
         spaces.add(SpaceFactory.createRandomSpace(i));
       }

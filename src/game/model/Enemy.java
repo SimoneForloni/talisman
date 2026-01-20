@@ -14,7 +14,7 @@ public class Enemy {
 	
 	public Enemy(String name, int maxHp, int attack, int defense, int xpReward, int coinsReward) {
 		this.name = name;
-		this.hp = maxHp; // Il nemico spawna con la vita al massimo
+		this.hp = maxHp;
 		this.attack = attack;
 		this.defense = defense;
 		this.xpReward = xpReward;
@@ -48,12 +48,9 @@ public class Enemy {
 	// ===========================================================
 
 	public boolean isAlive() {
-		return this.hp > 0;
-	}
-
-	public void takeDamage(int damage) {
-		int effectiveDamage = Math.max(0, damage - this.defense);
-		this.hp -= effectiveDamage;
-		if (this.hp < 0) this.hp = 0;
+		if (this.hp > 0) {
+			return true;
+		}
+		return false;
 	}
 }
