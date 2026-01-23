@@ -5,7 +5,7 @@ import java.util.List;
 import game.model.inventory.*;
 import game.util.CharacterClass;;
 
-public class Player {
+public class Player implements Combatant {
 	// Statistiche di stato
 	private String name;
 	private CharacterClass characterClass;
@@ -23,9 +23,14 @@ public class Player {
 	private int charisma;
 	private int agility;
 	private int luck;
-
+	
 	private List<InventoryObject> inventory;
 	private List<InventoryObject> spells;
+	private List<StatusEffect> statusEffects;
+
+	// ===========================================================
+	// COSTRUTTORI
+	// ===========================================================
 
 	public Player() {
 		this.inventory = new ArrayList<>();
@@ -47,6 +52,7 @@ public class Player {
 		this.position = 0;
 		this.inventory = new ArrayList<>();
 		this.spells = new ArrayList<>();
+		this.statusEffects = new ArrayList<>();
 
 		// Copia le statistiche dalla Enum
 		this.strength = charClass.strength;
@@ -93,8 +99,14 @@ public class Player {
 		return intelligence;
 	}
 
-	public int getCarisma() {
+	public int getCharisma() {
 		return charisma;
+	}
+
+	// Metodo per l'interfaccia Combatant, usa la forza come attacco base
+	@Override
+	public int getAttack() {
+		return strength;
 	}
 
 	public int getAgility() {
@@ -119,6 +131,10 @@ public class Player {
 
 	public List<InventoryObject> getSpells() {
 		return spells;
+	}
+
+	public List<StatusEffect> getStatusEffects() {
+		return statusEffects;
 	}
 
 	// ===========================================================
@@ -157,7 +173,7 @@ public class Player {
 		this.intelligence = intelligence;
 	}
 
-	public void setCarisma(int charisma) {
+	public void setCharisma(int charisma) {
 		this.charisma = charisma;
 	}
 
@@ -187,6 +203,23 @@ public class Player {
 
 	public void heal(int healthGain) {
 		this.hp = Math.min(maxHp, this.hp + healthGain);
+	}
+
+	public void addStatusEffect(StatusEffect effect) {
+		if (!statusEffects.contains(effect)) {
+			statusEffects.add(effect);
+			System.out.println(name + " is now " + effect + "!");
+		}
+	}
+
+	public void removeStatusEffect(StatusEffect effect) {
+		statusEffects.remove(effect);
+		System.out.println(name + " is no longer " + effect + ".");
+	}
+
+	@Override
+	public void takeDamage(int damage) {
+		this.hp = Math.max(0, this.hp - damage);
 	}
 
 	public boolean isAlive() {

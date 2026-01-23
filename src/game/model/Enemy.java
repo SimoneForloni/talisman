@@ -1,6 +1,6 @@
 package game.model;
 
-public class Enemy {
+public class Enemy implements Combatant {
 	private String name;
 	private int hp;
 	private int attack;
@@ -46,6 +46,11 @@ public class Enemy {
 	// ===========================================================
 	// METODI DI LOGICA / AZIONI
 	// ===========================================================
+
+	@Override
+	public void takeDamage(int damage) {
+		this.hp = Math.max(0, this.hp - damage);
+	}
 
 	public boolean isAlive() {
 		if (this.hp > 0) {

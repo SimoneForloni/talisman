@@ -1,52 +1,92 @@
 package game.service.managers;
 
+import java.util.Random;
+import game.model.Combatant;
 import game.model.Enemy;
 import game.model.Player;
+import game.model.StatusEffect;
 import game.util.Methods;
 
 public class CombatManager {
 
-  public static void startCombat(Player player, Enemy enemy) {
-    System.out.println("!!! Encounter: " + enemy.getName() + " attacks !!!");
+    private static final Random random = new Random();
 
-    Methods.pressEnterToContinue();
+    public void startBattle(Player player, Enemy enemy) {
+        System.out.println("!!! COMBAT START !!!");
+        System.out.printf("%s challenges %s!\n\n", player.getName(), enemy.getName());
+        Methods.pressEnterToContinue();
 
-    while (player.isAlive() && enemy.isAlive()) {
-      Methods.clearScreen();
+        Combatant attacker = player;
+        Combatant defender = enemy;
 
-      System.out
-          .println("--- Player HP: " + player.getHp() + " | " + enemy.getName() + " HP: " + enemy.getHp() + " ---");
+        while (player.isAlive() && enemy.isAlive()) {
+            executeTurn(attacker, defender);
 
-      // 1. Player attack
-      int pDice = (int) (Math.random() * 6) + 1;
-      int damageToEnemy = Math.max(0, (player.getStrength() + pDice) - enemy.getDefense());
-      enemy.setHp(enemy.getHp() - damageToEnemy);
-      System.out.println("> You roll " + pDice + " and deal " + damageToEnemy + " damage!");
+            if (!defender.isAlive()) {
+                break;
+            }
 
-      Methods.pressEnterToContinue();
+            Combatant temp = attacker;
+            attacker = defender;
+            defender = temp;
+        }
 
-      if (enemy.getHp() <= 0)
-        break;
-
-      Methods.clearScreen();
-
-      System.out
-          .println("--- Player HP: " + player.getHp() + " | " + enemy.getName() + " HP: " + enemy.getHp() + " ---");
-
-      // 2. Enemy attack
-      int eDice = (int) (Math.random() * 6) + 1;
-      int damageToPlayer = Math.max(0, (enemy.getAttack() + eDice) - player.getDefense());
-      player.setHp(player.getHp() - damageToPlayer);
-      System.out.println("> " + enemy.getName() + " rolls " + eDice + " and deals " + damageToPlayer + " damage!");
-
-      Methods.pressEnterToContinue();
+        handleBattleEnd(player, enemy);
     }
 
-    if (player.isAlive()) {
-      System.out.println("\nVICTORY! You defeated " + enemy.getName());
-      System.out.println("Rewards: " + enemy.getXpReward() + " XP and " + enemy.getCoinsReward() + " Coins.");
-      player.setXp(player.getXp() + enemy.getXpReward());
-      player.setCoins(player.getCoins() + enemy.getCoinsReward());
+    private void executeTurn(Combatant attacker, Combatant defender) {
+        if (attacker instanceof Player) {
+            applyStatusEffects((Player) attacker);
+            if (!attacker.isAlive()) return;
+        }
+
+        System.out.printf("--- %s's Turn ---\n", attacker.getName());
+
+        int diceRoll = random.nextInt(6) + 1;
+        int totalAttack = attacker.getAttack() + diceRoll;
+        int damage = Math.max(0, totalAttack - defender.getDefense());
+
+        System.out.printf("%s attacks with %d (Attack) + %d (Dice) = %d\n",
+                attacker.getName(), attacker.getAttack(), diceRoll, totalAttack);
+
+        if (damage > 0) {
+            defender.takeDamage(damage);
+            System.out.printf("%s defends %d and takes %d damage!\n", defender.getName(), defender.getDefense(), damage);
+        } else {
+            System.out.printf("%s's defense holds! No damage taken.\n", defender.getName());
+        }
+
+        System.out.printf("Remaining HP -> %s: %d | %s: %d\n\n",
+                attacker.getName(), attacker.getHp(),
+                defender.getName(), defender.getHp());
+
+        Methods.pressEnterToContinue();
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        Methods.clearScreen();
     }
-  }
+
+    private void handleBattleEnd(Player player, Enemy enemy) {
+        if (player.isAlive()) {
+            System.out.printf("VICTORY! %s has been defeated.\n", enemy.getName());
+            System.out.printf("You gained %d XP and %d Coins.\n", enemy.getXpReward(), enemy.getCoinsReward());
+            player.setXp(player.getXp() + enemy.getXpReward());
+            player.setCoins(player.getCoins() + enemy.getCoinsReward());
+        } else {
+            System.out.printf("DEFEAT... %s has defeated you.\n", enemy.getName());
+        }
+    }
+
+    private void applyStatusEffects(Player player) {
+        if (player.getStatusEffects().contains(StatusEffect.POISONED)) {
+            System.out.println("Poison deals 1 damage!");
+            player.takeDamage(1);
+        }
+        // Altri effetti possono essere gestiti qui
+    }
 }
