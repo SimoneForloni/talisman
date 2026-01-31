@@ -30,7 +30,7 @@ public class SpaceFactory {
    *         The specific subclass
    *         instance returned depends on the value of the random roll:
    */
-  public static Space createRandomSpace(int id, game.service.factories.Deck deck, GameLogger logger) {
+  public static Space createRandomSpace(int id, game.Deck deck, GameLogger logger) {
     int roll = random.nextInt(100);
 
     if (roll < 40) {

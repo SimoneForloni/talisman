@@ -1,9 +1,10 @@
 package game.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import game.model.inventory.*;
-import game.util.CharacterClass;;
+import game.util.CharacterClass;
 
 public class Player implements Combatant {
 	// Statistiche di stato
@@ -126,15 +127,15 @@ public class Player implements Combatant {
 	}
 
 	public List<InventoryObject> getInventory() {
-		return inventory;
+		return Collections.unmodifiableList(inventory);
 	}
 
 	public List<InventoryObject> getSpells() {
-		return spells;
+		return Collections.unmodifiableList(spells);
 	}
 
 	public List<StatusEffect> getStatusEffects() {
-		return statusEffects;
+		return Collections.unmodifiableList(statusEffects);
 	}
 
 	// ===========================================================
@@ -203,6 +204,22 @@ public class Player implements Combatant {
 
 	public void heal(int healthGain) {
 		this.hp = Math.min(maxHp, this.hp + healthGain);
+	}
+
+	public void addItem(InventoryObject item) {
+		inventory.add(item);
+	}
+
+	public void removeItem(InventoryObject item) {
+		inventory.remove(item);
+	}
+
+	public void addSpell(InventoryObject spell) {
+		spells.add(spell);
+	}
+
+	public void removeSpell(InventoryObject spell) {
+		spells.remove(spell);
 	}
 
 	public void addStatusEffect(StatusEffect effect) {

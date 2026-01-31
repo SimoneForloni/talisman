@@ -3,11 +3,12 @@ package game.model.board.spaces;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import game.Deck;
 import game.model.Player;
 import game.service.GameLogger;
 import game.model.board.cards.AdventureCard;
 import game.model.board.cards.CardType;
-import game.service.factories.Deck;
 
 public class DrawCardSpace extends Space {
 

@@ -1,9 +1,10 @@
-package game.service.factories;
+package game;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 import game.service.GameLogger;
+import game.service.factories.EnemyFactory;
 import game.model.Enemy;
 import game.model.StatusEffect;
 import game.model.board.cards.AdventureCard;
