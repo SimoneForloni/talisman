@@ -6,7 +6,6 @@ import game.model.board.spaces.Space;
 import game.service.loggers.ConsoleLogger;
 import game.service.loggers.GameLogger;
 import game.service.managers.CombatManager;
-import game.util.Methods;
 
 public class Game {
   private final Player player;
@@ -14,123 +13,99 @@ public class Game {
   private final Deck deck;
   private final GameLogger logger;
   private final CombatManager combatManager;
-  private boolean isRunning;
 
-  Game(Player player) {
+  public Game(Player player) {
     this.player = player;
     this.logger = new ConsoleLogger();
     this.combatManager = new CombatManager(logger);
     this.deck = new Deck(logger);
     this.board = new Board(deck, logger, combatManager);
-    this.isRunning = false;
+  }
+
+  // Costruttore pubblico per la GUI
+  public Game(Player player, GameLogger logger) {
+    this.player = player;
+    this.logger = logger;
+    this.combatManager = new CombatManager(logger);
+    this.deck = new Deck(logger);
+    this.board = new Board(deck, logger, combatManager);
   }
 
   public void start() {
-    this.isRunning = true;
-
-    while (isRunning && player.isAlive()) {
-      playTurn();
-    }
-
-    if (player.isAlive() == false) {
-      hadleGameOver();
-    }
+    logger.log("Game Started! Ready to play.");
+    showGameMenu(); // Mostra lo stato iniziale nel log
   }
 
-  private void playTurn() {
-    showGameMenu();
-    switch (Methods.readNumber(1, 4)) {
-      case 1 -> movePlayer();
-      case 2 -> showInventory();
-      case 3 -> showCharacterSheet();
-      default -> quitGame();
-    }
-  }
-
-  private void showGameMenu() {
-    Methods.clearScreen();
+  public void showGameMenu() {
     Space currentSpace = board.getSpace(player);
 
-    System.out.println("\n" + "=".repeat(50));
-    System.out.printf(" POSITION: %d | SPACE: %s\n", player.getPosition() + 1, currentSpace.getName());
-    System.out.printf(" HP: %d/%d | COINS: %d | XP: %d\n",
-        player.getHp(), player.getMaxHp(), player.getCoins(), player.getXp());
-    System.out.println("=".repeat(50));
-    System.out.println("1) Roll Dice & Move");
-    System.out.println("2) Inventory");
-    System.out.println("3) Character Stats");
-    System.out.println("4) Quit Game");
-    System.out.print("\nYour choice: ");
+    logger.log("\n" + "=".repeat(50));
+    logger.log(String.format(" POSITION: %d | SPACE: %s", player.getPosition() + 1, currentSpace.getName()));
+    logger.log(String.format(" HP: %d/%d | COINS: %d | XP: %d",
+        player.getHp(), player.getMaxHp(), player.getCoins(), player.getXp()));
+    logger.log("=".repeat(50));
+    logger.log("1) Roll Dice & Move");
+    logger.log("2) Inventory");
+    logger.log("3) Character Stats");
+    logger.log("4) Quit Game");
   }
 
-  private void movePlayer() {
-    try {
-      System.out.print("Rolling dice");
-      for (int i = 0; i < 3; i++) {
-        Thread.sleep(200);
-        System.out.print(".");
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+  public void movePlayer() { // Deve essere public per essere visto dal Controller
+    if (!player.isAlive())
+      return;
+
+    logger.log("Rolling dice...");
 
     int dice = (int) (Math.random() * 6) + 1;
-    System.out.println("\nResult: [" + dice + "]");
+    logger.log("Result: [" + dice + "]");
 
     int newPos = board.calculateNewPosition(player.getPosition(), dice);
     player.setPosition(newPos);
 
     Space currentSpace = board.getSpace(player);
 
-    System.out.println("\n>>> Landed on: " + currentSpace.getName() + " <<<");
-    System.out.println(currentSpace.getDescription());
-    System.out.println("-".repeat(50));
+    logger.log("\n>>> Landed on: " + currentSpace.getName() + " <<<");
+    logger.log(currentSpace.getDescription());
+    logger.log("-".repeat(50));
 
     currentSpace.onLand(player);
-    System.out.println();
 
-    Methods.pressEnterToContinue();
+    // Controllo morte dopo l'evento (es. combattimento o trappola)
+    if (!player.isAlive()) {
+      hadleGameOver();
+    }
   }
 
-  private void showInventory() {
-    Methods.clearScreen();
-
-    System.out.println("========= INVENTORY =========");
+  public void showInventory() { // Deve essere public
+    logger.log("========= INVENTORY =========");
 
     if (player.getInventory().isEmpty()) {
-      System.out.println("\n-- Empty --\n");
+      logger.log("\n-- Empty --\n");
     } else {
-      player.getInventory().forEach(System.out::println);
+      player.getInventory().forEach(item -> logger.log(item.toString()));
     }
-    Methods.pressEnterToContinue();
   }
 
-  private void showCharacterSheet() {
-    Methods.clearScreen();
-    System.out.println("=========== STATS ==========");
+  public void showCharacterSheet() { // Deve essere public
+    logger.log("=========== STATS ==========");
 
-    System.out.println(player.toString());
-    Methods.pressEnterToContinue();
+    logger.log(player.toString());
   }
 
-  private void quitGame() {
-    Methods.clearScreen();
-    System.out.println("Saving...");
-    Methods.pressEnterToContinue();
-    isRunning = false;
+  public void quitGame() { // Deve essere public
+    logger.log("Saving...");
+    // In GUI qui potresti chiudere lo Stage o tornare al menu principale
   }
 
   private void hadleGameOver() {
-    Methods.clearScreen();
-    System.out.println("""
+    logger.log("""
         ####################################
                   G A M E   O V E R
         ####################################
         """);
-    System.out.println("L'avventura di " + player.getName() + " termina qui.");
-    System.out.println("Monete raccolte: " + player.getCoins());
-    System.out.println("Esperienza totale: " + player.getXp());
-    System.out.println("\nGrazie per aver giocato!");
-    Methods.pressEnterToContinue();
+    logger.log("L'avventura di " + player.getName() + " termina qui.");
+    logger.log("Monete raccolte: " + player.getCoins());
+    logger.log("Esperienza totale: " + player.getXp());
+    logger.log("\nGrazie per aver giocato!");
   }
 }
