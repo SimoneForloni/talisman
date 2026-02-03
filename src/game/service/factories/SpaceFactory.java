@@ -39,6 +39,7 @@ public class SpaceFactory {
     int roll = random.nextInt(100);
 
     if (roll < 40) {
+      // 40% Pianura
       return new Space("Plain", "A quiet and lonely walk") {
         @Override
         public void onLand(Player player) {
@@ -47,11 +48,14 @@ public class SpaceFactory {
       };
 
     } else if (roll < 75) {
+      // 35% Carta
       return new DrawCardSpace("Mysterious Woods " + id, "The shadows lengthen around you...", deck, logger,
           combatManager);
     } else if (roll < 90) {
+      // 15% Tesoro
       return new TreasureSpace(logger);
     } else {
+      // 10% Villaggio
       return new VillageSpace();
     }
   }

@@ -6,6 +6,7 @@ import game.model.board.spaces.Space;
 import game.service.loggers.ConsoleLogger;
 import game.service.loggers.GameLogger;
 import game.service.managers.CombatManager;
+import game.util.Methods;
 
 public class Game {
   private final Player player;
@@ -13,45 +14,53 @@ public class Game {
   private final Deck deck;
   private final GameLogger logger;
   private final CombatManager combatManager;
+  private boolean isRunning;
 
   public Game(Player player) {
-    this.player = player;
-    this.logger = new ConsoleLogger();
-    this.combatManager = new CombatManager(logger);
-    this.deck = new Deck(logger);
-    this.board = new Board(deck, logger, combatManager);
+    this(player, new ConsoleLogger());
   }
 
-  // Costruttore pubblico per la GUI
   public Game(Player player, GameLogger logger) {
     this.player = player;
     this.logger = logger;
     this.combatManager = new CombatManager(logger);
     this.deck = new Deck(logger);
     this.board = new Board(deck, logger, combatManager);
+    this.isRunning = false;
   }
 
+  /**
+   * Ciclo principale per CLI.
+   * Qui gestiamo il clearScreen e il pressEnter per dare ritmo al gioco.
+   */
   public void start() {
-    logger.log("Game Started! Ready to play.");
-    logPlayerStatus(); // Mostra lo stato iniziale nel log
+    isRunning = true;
+
+    while (isRunning && player.isAlive()) {
+      Methods.clearScreen(); // Pulisce all'inizio di ogni turno
+      showCLIMenu();
+      handleCLIInput();
+
+      // Se non abbiamo chiuso il gioco, aspettiamo che l'utente legga prima di pulire
+      // di nuovo
+      if (isRunning && player.isAlive()) {
+        Methods.pressEnterToContinue();
+      }
+    }
+
+    if (!player.isAlive()) {
+      Methods.clearScreen();
+      handleGameOver();
+    }
   }
 
-  public void logPlayerStatus() {
-    Space currentSpace = board.getSpace(player);
+  // --- LOGICA CORE (Indipendente dall'interfaccia) ---
 
-    logger.log("\n" + "=".repeat(50));
-    logger.log(String.format(" POSITION: %d | SPACE: %s", player.getPosition() + 1, currentSpace.getName()));
-    logger.log(String.format(" HP: %d/%d | COINS: %d | XP: %d",
-        player.getHp(), player.getMaxHp(), player.getCoins(), player.getXp()));
-    logger.log("=".repeat(50));
-  }
-
-  public void movePlayer() { // Deve essere public per essere visto dal Controller
+  public void movePlayer() {
     if (!player.isAlive())
       return;
 
     logger.log("Rolling dice...");
-
     int dice = (int) (Math.random() * 6) + 1;
     logger.log("Result: [" + dice + "]");
 
@@ -59,49 +68,65 @@ public class Game {
     player.setPosition(newPos);
 
     Space currentSpace = board.getSpace(player);
-
     logger.log("\n>>> Landed on: " + currentSpace.getName() + " <<<");
     logger.log(currentSpace.getDescription());
-    logger.log("-".repeat(50));
 
     currentSpace.onLand(player);
 
-    // Controllo morte dopo l'evento (es. combattimento o trappola)
-    if (!player.isAlive()) {
-      handleGameOver();
-    }
+    // La GUI chiamerà questo metodo e vedrà i log apparire.
+    // La CLI chiama questo e poi aspetta il "Press Enter" nel metodo start().
   }
 
-  public void showInventory() { // Deve essere public
-    logger.log("========= INVENTORY =========");
-
+  public void showInventory() {
+    logger.log("\n========= INVENTORY =========");
     if (player.getInventory().isEmpty()) {
-      logger.log("\n-- Empty --\n");
+      logger.log("Empty");
     } else {
-      player.getInventory().forEach(item -> logger.log(item.toString()));
+      player.getInventory().forEach(item -> logger.log("- " + item.toString()));
     }
   }
 
-  public void showCharacterSheet() { // Deve essere public
-    logger.log("=========== STATS ==========");
-
+  public void showCharacterSheet() {
+    logger.log("\n=========== STATS ==========");
     logger.log(player.toString());
   }
 
-  public void quitGame() { // Deve essere public
-    logger.log("Saving...");
-    // In GUI qui potresti chiudere lo Stage o tornare al menu principale
+  public void quitGame() {
+    logger.log("Exiting game...");
+    this.isRunning = false;
+  }
+
+  // --- SUPPORTI CLI ---
+
+  private void showCLIMenu() {
+    Space currentSpace = board.getSpace(player);
+    System.out.println("=".repeat(50));
+    System.out.printf(" POSITION: %d | SPACE: %s\n", player.getPosition() + 1, currentSpace.getName());
+    System.out.printf(" HP: %d/%d | COINS: %d | XP: %d\n",
+        player.getHp(), player.getMaxHp(), player.getCoins(), player.getXp());
+    System.out.println("=".repeat(50));
+    System.out.println("1) Roll Dice & Move");
+    System.out.println("2) Inventory");
+    System.out.println("3) Character Stats");
+    System.out.println("4) Quit Game");
+    System.out.print("\nYour choice: ");
+  }
+
+  private void handleCLIInput() {
+    int choice = Methods.readNumber(1, 4);
+    switch (choice) {
+      case 1 -> movePlayer();
+      case 2 -> showInventory();
+      case 3 -> showCharacterSheet();
+      case 4 -> quitGame();
+    }
   }
 
   private void handleGameOver() {
-    logger.log("""
-        ####################################
-                  G A M E   O V E R
-        ####################################
-        """);
-    logger.log("L'avventura di " + player.getName() + " termina qui.");
-    logger.log("Monete raccolte: " + player.getCoins());
-    logger.log("Esperienza totale: " + player.getXp());
-    logger.log("\nGrazie per aver giocato!");
+    logger.log("\n" + "#".repeat(40));
+    logger.log("           G A M E   O V E R");
+    logger.log("#".repeat(40));
+    logger.log("\nL'avventura di " + player.getName() + " termina qui.");
+    logger.log("Monete: " + player.getCoins() + " | XP: " + player.getXp());
   }
 }

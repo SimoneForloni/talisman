@@ -3,28 +3,36 @@ package game.model.board.cards;
 import game.model.Player;
 import game.model.inventory.InventoryObject;
 
+/**
+ * Rappresenta una carta che contiene un oggetto.
+ * Quando il giocatore incontra questa carta, l'oggetto viene aggiunto al suo
+ * inventario.
+ */
 public class ItemCard implements AdventureCard {
-    private InventoryObject item;
-    private String name;
 
-    public ItemCard(String name, InventoryObject item) {
-        this.name = name;
-        this.item = item;
-    }
+	private final InventoryObject item;
 
-    @Override
-    public void execute(Player player) {
-        System.out.printf("You found an item: %s!\n", name);
-        player.getInventory().add(item);
-    }
+	public ItemCard(InventoryObject item) {
+		this.item = item;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	public InventoryObject getItem() {
+		return item;
+	}
 
-    @Override
-    public CardType getType() {
-        return CardType.ITEM;
-    }
+	@Override
+	public void execute(Player player) {
+		System.out.println("Hai trovato un oggetto: " + item.getName());
+		player.addItem(item);
+	}
+
+	@Override
+	public String getName() {
+		return item.getName();
+	}
+
+	@Override
+	public CardType getType() {
+		return CardType.ITEM;
+	}
 }

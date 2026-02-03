@@ -28,7 +28,7 @@ public class Player implements Combatant {
 	private int luck;
 
 	private List<InventoryObject> inventory;
-	private List<InventoryObject> spells;
+	private List<Spell> spells;
 	private List<StatusEffect> statusEffects;
 
 	// ===========================================================
@@ -132,7 +132,7 @@ public class Player implements Combatant {
 		return Collections.unmodifiableList(inventory);
 	}
 
-	public List<InventoryObject> getSpells() {
+	public List<Spell> getSpells() {
 		return Collections.unmodifiableList(spells);
 	}
 
@@ -240,11 +240,11 @@ public class Player implements Combatant {
 		inventory.remove(item);
 	}
 
-	public void addSpell(InventoryObject spell) {
+	public void addSpell(Spell spell) {
 		spells.add(spell);
 	}
 
-	public void removeSpell(InventoryObject spell) {
+	public void removeSpell(Spell spell) {
 		spells.remove(spell);
 	}
 
@@ -280,9 +280,18 @@ public class Player implements Combatant {
 				  STR: %d  DEF: %d  INT: %d
 				  CAR: %d  AGI: %d  LUK: %d
 				+--------------------------+
-				""", name, characterClass, hp, maxHp, coins,
-				getHp(), getMaxHp(), getCoins(),
-				strength, defense, intelligence, charisma, agility, luck);
+				""", 
+				name,
+				characterClass,
+				getHp(), // Usa il getter per avere l'int da hp
+				getMaxHp(), // Usa il getter per avere l'int da maxHp
+				getCoins(), // Usa il getter per avere l'int da coins
+				strength,
+				defense,
+				intelligence,
+				charisma,
+				agility,
+				luck);
 	}
 
 }
